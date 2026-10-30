@@ -333,6 +333,7 @@ environment.systemPackages = with pkgs; [
     sudo nixos-rebuild switch
     git add -A
     git commit -m "rebuild $(date -Iseconds)" || true
+    git push
   '') # Git version control
 ];
 
