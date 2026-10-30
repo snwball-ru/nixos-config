@@ -16,7 +16,41 @@ let
   noctaliaGreeter = pkgs.callPackage
     "${noctaliaGreeterSrc}/nix/package.nix"
     { };
+
+    tempora = pkgs.stdenv.mkDerivation {
+    pname = "tempora";
+    version = "1.5.0-beta";
+
+    src = pkgs.fetchzip {
+      url = "https://github.com/teamkongehund/Tempora/releases/download/v1.5.0-beta/Tempora-v1.5.0-beta-Linux.zip";
+      hash = "sha256-F7YBMrtyHelSw51GlOv4cC76m4A1Q+00AhUCYkMAlLY=";
+      stripRoot = false;
+    };
+
+    nativeBuildInputs = [ pkgs.autoPatchelfHook pkgs.makeWrapper ];
+    buildInputs = with pkgs; [
+      stdenv.cc.cc.lib fontconfig zlib openssl krb5 icu
+    ];
+
+    runtimeDependencies = with pkgs; [
+      xorg.libX11 xorg.libXcursor xorg.libXi xorg.libXinerama
+      xorg.libXrandr xorg.libXext xorg.libXrender
+      libGL libxkbcommon alsa-lib libpulseaudio udev vulkan-loader dbus
+      openssl icu
+    ];
+
+    installPhase = ''
+      mkdir -p $out/share/tempora $out/bin
+      cp -r Tempora-Linux data_Tempora_linuxbsd_x86_64 $out/share/tempora/
+      chmod +x $out/share/tempora/Tempora-Linux
+      rm -f $out/share/tempora/data_Tempora_linuxbsd_x86_64/libcoreclrtraceptprovider.so
+      makeWrapper $out/share/tempora/Tempora-Linux $out/bin/tempora \
+    --set DOTNET_SYSTEM_GLOBALIZATION_INVARIANT 1 \
+    --prefix LD_LIBRARY_PATH : ${pkgs.lib.makeLibraryPath [ pkgs.icu pkgs.fontconfig pkgs.dbus ]}
+    '';
+  };
 in
+
 {
   imports =
     [ # Include the results of the hardware scan.
@@ -64,11 +98,7 @@ services.lact.enable = true;
 
 # Network
 
-  networking.hostName = "snwball-laptop"; # Define your hostname.
-  
-  # Configure network proxy if necessary
-  # networking.proxy.default = "http://user:password@proxy:port/";
-  # networking.proxy.noProxy = "127.0.0.1,localhost,internal.domain";
+  networking.hostName = "snwball-laptop";
 
   # Enable networking
   networking.networkmanager.enable = true;
@@ -104,7 +134,25 @@ services.lact.enable = true;
   type = "ibus";
 };
 
+# Keyboard
+
+   services.udev.extraRules = ''
+  KERNEL=="hidraw*", ATTRS{idVendor}=="3151", ATTRS{idProduct}=="5029", GROUP="users", MODE="0660"
+  SUBSYSTEM=="hidraw", ATTRS{idVendor}=="8089", MODE="0666"
+  SUBSYSTEM=="usb", ATTRS{idVendor}=="8089", MODE="0666"
+'';
+
   services.udisks2.enable = true;
+
+# Android camera over USB
+
+boot.extraModulePackages = [ config.boot.kernelPackages.v4l2loopback ];
+boot.kernelModules = [ "v4l2loopback" ];
+boot.extraModprobeConfig = ''
+  options v4l2loopback devices=2 video_nr=1,10 card_label="OBS Virtual Camera,Phone Camera" exclusive_caps=1,1
+'';
+
+security.polkit.enable = true;
 
 # Sound
   services.pulseaudio.enable = false;
@@ -144,19 +192,30 @@ services.xserver.xkb = {
   options = "grp:alt_shift_toggle";
 };
 
-  xdg.portal = {
-    enable = true;
-    extraPortals = with pkgs; [
-      xdg-desktop-portal-gnome
-      xdg-desktop-portal-gtk
-    ];
-    config.niri = {
-      "org.freedesktop.impl.portal.FileChooser" = [ "gtk" ];
-      "org.freedesktop.impl.portal.ScreenCast" = [ "gnome" ];
-    };
-  };
+environment.sessionVariables.TERMCMD = "alacritty -e";
 
-  fonts.packages = with pkgs; [
+xdg.portal = {
+  enable = true;
+  extraPortals = [
+    pkgs.xdg-desktop-portal-termfilechooser
+    pkgs.xdg-desktop-portal-gtk
+    pkgs.xdg-desktop-portal-gnome
+  ];
+  config.niri = {
+    default = [ "gnome" "gtk" ];
+    "org.freedesktop.impl.portal.FileChooser" = [ "termfilechooser" ];
+    "org.freedesktop.impl.portal.ScreenCast" = [ "gnome" ];
+  };
+};
+
+# makes cli file picker work
+environment.etc."xdg/xdg-desktop-portal-termfilechooser/config".text = ''
+  [filechooser]
+  cmd=${pkgs.xdg-desktop-portal-termfilechooser}/share/xdg-desktop-portal-termfilechooser/yazi-wrapper.sh
+  default_dir=$HOME
+'';
+
+fonts.packages = with pkgs; [
     noto-fonts
     noto-fonts-color-emoji
     nerd-fonts.jetbrains-mono
@@ -183,10 +242,32 @@ services.xserver.xkb = {
 
   programs.gamemode.enable = true;
 
+  programs.bash.enable = true;
+
   programs.neovim = {
     enable = true;
     defaultEditor = true;
+      configure = {
+    packages.myPlugins.start = [ pkgs.vimPlugins.gruvbox-nvim ];
+    customRC = ''
+      set termguicolors
+      set background=dark
+      colorscheme gruvbox
+    '';
+    };
   };
+
+  programs.obs-studio = {
+  enable = true;
+  plugins = with pkgs.obs-studio-plugins; [
+    droidcam-obs
+  ];
+};
+
+services.zerotierone = {
+  enable = true;
+  joinNetworks = [ "b9a18a606f017a4b" ];
+};
 
   programs.throne = {
 	enable = true;
@@ -205,6 +286,7 @@ services.xserver.xkb = {
 
   nixpkgs.config.allowUnfree = true;
 
+
 environment.systemPackages = with pkgs; [
     unstable.noctalia-shell # shell, most important
     obsidian
@@ -212,10 +294,8 @@ environment.systemPackages = with pkgs; [
     telegram-desktop
     figma-linux
     audacity
-    obs-studio
     yt-dlp
     qbittorrent
-    zathura # pdf viewer
     exiftool
     mpv # media viewer
     yazi # CLI file manager
@@ -240,7 +320,43 @@ environment.systemPackages = with pkgs; [
     flacon # .cue splitting
     shotcut # fast video editing (ffmpeg ultra compatible or sth)
     git
-   ];
+    chromium # for testing and keyboard mappping
+    libreoffice
+    sioyek # pdf viewer
+    tempora # osu timing instrument
+    scrcpy # android camera
+    android-tools # android debugging
+    krita # image editing
+    openvpn3
+    (pkgs.writeShellScriptBin "nrs" ''
+    set -e
+    cd /etc/nixos/
+    sudo nixos-rebuild switch
+    git add -A
+    git commit -m "rebuild $(date -Iseconds)" || true
+  '') # Git version control
+];
+
+# for minecraft shaders
+programs.nix-ld.enable = true;
+programs.nix-ld.libraries = with pkgs; [
+  stdenv.cc.cc.lib
+  # --- Graphics Drivers & OpenGL ---
+  libGL
+  libglvnd
+  mesa
+  # --- Windowing & Input (X11/Wayland dependencies for GLFW) ---
+  xorg.libX11
+  xorg.libXext
+  xorg.libXcursor
+  xorg.libXrandr
+  xorg.libXi
+  glfw
+  # --- Audio & System Integrations ---
+  openal
+  udev
+  vulkan-loader
+];
 
   # Some programs need SUID wrappers, can be configured further or are
   # started in user sessions.
