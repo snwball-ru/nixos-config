@@ -327,7 +327,6 @@ environment.systemPackages = with pkgs; [
     scrcpy # android camera
     android-tools # android debugging
     krita # image editing
-    v2rayn
     openvpn3
     (pkgs.writeShellScriptBin "nrs" ''
     set -e
