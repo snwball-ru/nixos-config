@@ -192,7 +192,7 @@ services.xserver.xkb = {
   options = "grp:alt_shift_toggle";
 };
 
-environment.sessionVariables.TERMCMD = "alacritty -e";
+environment.sessionVariables.TERMCMD = "kitty";
 
 xdg.portal = {
   enable = true;
@@ -287,9 +287,10 @@ services.zerotierone = {
 
 
 environment.systemPackages = with pkgs; [
-    unstable.noctalia-shell # shell, most important
-    obsidian
-    davinci-resolve
+    unstable.noctalia # shell
+    kitty # terminal
+    obsidian # notes
+    davinci-resolve # video editing
     telegram-desktop
     figma-linux
     audacity
