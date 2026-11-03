@@ -273,6 +273,7 @@ services.zerotierone = {
 	tunMode.enable = true;
   };
 
+programs.openvpn3.enable = true;
 
 # Define a user account. Don't forget to set a password with ‘passwd’.
   users.users."snwball" = {
@@ -289,7 +290,7 @@ services.zerotierone = {
 
 environment.systemPackages = with pkgs; [
     unstable.noctalia-shell # shell, most important
-    obsidian
+    # obsidian
     davinci-resolve
     telegram-desktop
     figma-linux
@@ -327,7 +328,6 @@ environment.systemPackages = with pkgs; [
     scrcpy # android camera
     android-tools # android debugging
     krita # image editing
-    openvpn3
     (pkgs.writeShellScriptBin "nrs" ''
     set -e
     cd /etc/nixos/
