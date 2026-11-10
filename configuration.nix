@@ -274,6 +274,13 @@ services.zerotierone = {
 	tunMode.enable = true;
   };
 
+  # Audio client
+  services.mpd = {
+	enable = true;
+	user = "snwball";
+	musicDirectory = "/home/snwball/Music";
+  };
+
 # Define a user account. Don't forget to set a password with ‘passwd’.
   users.users."snwball" = {
     isNormalUser = true;
@@ -291,26 +298,21 @@ environment.systemPackages = with pkgs; [
     unstable.noctalia # shell
     kitty # terminal
     obsidian # notes
-    davinci-resolve # video editing
     telegram-desktop
     figma-linux
     audacity
     yt-dlp
     qbittorrent
     exiftool
-    mpv # media viewer
     yazi # CLI file manager
-    imv # image viewer
     xdg-desktop-portal # already pulled in by xdg.portal.enable above; kept explicit since you listed it
     cliphist # clipboard
     grim
     slurp
     p7zip # archiving
-    texlive.combined.scheme-medium # bump to scheme-full if you hit missing-package errors often
+    texlive.combined.scheme-full
     bibata-cursors   # cursor theme referenced by the greeter config above
     xwayland-satellite # xorg and wayland compatibility
-    alacritty # terminal
-    nautilus # GUI file manager
     zen-browser.default # web browser
     osu-lazer-bin 
     adwaita-icon-theme # noctalia-shell icons
@@ -319,16 +321,28 @@ environment.systemPackages = with pkgs; [
     udiskie # auto mounting disks
     jdk8 # older java for minecraft
     flacon # .cue splitting
-    shotcut # fast video editing (ffmpeg ultra compatible or sth)
     git
     chromium # for testing and keyboard mappping
     libreoffice
-    sioyek # pdf viewer
     tempora # osu timing instrument
     scrcpy # android camera
     android-tools # android debugging
-    krita # image editing
     openvpn
+    beets # collection manager
+    mpd # audio engine
+
+    # Multimedia
+    ncmpcpp # audio frontend
+    sioyek # pdf viewer
+    mpv # media viewer
+    imv # image viewer
+
+    # Multimedia editing
+    shotcut # fast video editing (ffmpeg ultra compatible or sth)
+    davinci-resolve # video editing
+    krita # image editing
+    
+    # script for rebuilding and pushing to git
     (pkgs.writeShellScriptBin "nrs" ''
     set -e
     cd /etc/nixos/
@@ -336,7 +350,7 @@ environment.systemPackages = with pkgs; [
     git add configuration.nix
     git commit -m "rebuild $(date -Iseconds)" || true
     git push
-  '') # Git version control
+    '')
 ];
 
 # for minecraft shaders
