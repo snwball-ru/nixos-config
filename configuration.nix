@@ -330,6 +330,8 @@ environment.systemPackages = with pkgs; [
     openvpn
     beets # collection manager
     mpd # audio engine
+    ffmpeg
+    chromaprint
 
     # Multimedia
     ncmpcpp # audio frontend
@@ -341,7 +343,7 @@ environment.systemPackages = with pkgs; [
     shotcut # fast video editing (ffmpeg ultra compatible or sth)
     davinci-resolve # video editing
     krita # image editing
-    
+   
     # script for rebuilding and pushing to git
     (pkgs.writeShellScriptBin "nrs" ''
     set -e
