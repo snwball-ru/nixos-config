@@ -127,7 +127,7 @@ services.lact.enable = true;
   };
 
   # Enable CUPS to print documents.
-  services.printing.enable = true;
+  services.printing.enable = false;
 
   i18n.inputMethod = {
   enable = true;
@@ -136,11 +136,11 @@ services.lact.enable = true;
 
 # Keyboard
 
-   services.udev.extraRules = ''
-  KERNEL=="hidraw*", ATTRS{idVendor}=="3151", ATTRS{idProduct}=="5029", GROUP="users", MODE="0660"
-  SUBSYSTEM=="hidraw", ATTRS{idVendor}=="8089", MODE="0666"
-  SUBSYSTEM=="usb", ATTRS{idVendor}=="8089", MODE="0666"
-'';
+  services.udev.extraRules = ''
+	KERNEL=="hidraw*", ATTRS{idVendor}=="3151", ATTRS{idProduct}=="5029", TAG+="uaccess"
+	SUBSYSTEM=="hidraw", ATTRS{idVendor}=="8089", TAG+="uaccess"
+	SUBSYSTEM=="usb", ATTR{idVendor}=="8089", TAG+="uaccess"
+  '';
 
   services.udisks2.enable = true;
 
@@ -177,7 +177,7 @@ security.polkit.enable = true;
    };
   };
 
-  # Enable touchpad support (enabled default in most desktopManager).
+  # Enable touchpad support
   services.libinput.enable = true;
  
   programs.niri.enable = true;
@@ -276,10 +276,7 @@ fonts.packages = with pkgs; [
   # ];
 };
 
-services.zerotierone = {
-  enable = true;
-  joinNetworks = [ "b9a18a606f017a4b" ];
-};
+services.zerotierone.enable = true;
 
   programs.throne = {
 	enable = true;
@@ -296,11 +293,7 @@ services.zerotierone = {
 # Define a user account. Don't forget to set a password with ‘passwd’.
   users.users."snwball" = {
     isNormalUser = true;
-    description = "snwball";
     extraGroups = [ "networkmanager" "wheel" "video" "audio" "git" ];
-    packages = with pkgs; [
-    
-    ];
   };
 
   nixpkgs.config.allowUnfree = true;
@@ -335,13 +328,11 @@ environment.systemPackages = with pkgs; [
     flacon # .cue splitting
     git
     chromium # for testing and keyboard mappping
-    libreoffice
     tempora # osu timing instrument
     scrcpy # android camera
     android-tools # android debugging
     openvpn
     beets # collection manager
-    mpd # audio engine
     ffmpeg
     chromaprint
 
@@ -350,6 +341,8 @@ environment.systemPackages = with pkgs; [
     sioyek # pdf viewer
     mpv # media viewer
     imv # image viewer
+    libreoffice
+    mpd # audio engine
 
     # Multimedia editing
     shotcut # fast video editing (ffmpeg ultra compatible or sth)
