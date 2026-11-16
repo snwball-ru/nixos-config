@@ -163,6 +163,18 @@ security.polkit.enable = true;
     alsa.support32Bit = true;
     pulse.enable = true;
     jack.enable = true;
+    wireplumber.extraConfig."51-usb-dac" = {
+    "monitor.alsa.rules" = [
+      {
+        matches = [ { "node.name" = "~alsa_output.usb-.*"; } ];
+        actions.update-props = {
+          "session.suspend-timeout-seconds" = 0;
+          "api.alsa.soft-mixer" = true;
+          "api.alsa.headroom" = 512;
+        };
+      }
+    ];
+   };
   };
 
   # Enable touchpad support (enabled default in most desktopManager).
