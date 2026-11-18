@@ -136,11 +136,11 @@ services.lact.enable = true;
 
 # Keyboard
 
-  services.udev.extraRules = ''
-	KERNEL=="hidraw*", ATTRS{idVendor}=="3151", ATTRS{idProduct}=="5029", TAG+="uaccess"
-	SUBSYSTEM=="hidraw", ATTRS{idVendor}=="8089", TAG+="uaccess"
-	SUBSYSTEM=="usb", ATTR{idVendor}=="8089", TAG+="uaccess"
-  '';
+services.udev.extraRules = ''
+  KERNEL=="hidraw*", ATTRS{idVendor}=="3151", ATTRS{idProduct}=="5029", GROUP="users", MODE="0660"
+  SUBSYSTEM=="hidraw", ATTRS{idVendor}=="8089", GROUP="users", MODE="0660"
+  SUBSYSTEM=="usb", ATTR{idVendor}=="8089", GROUP="users", MODE="0660"
+'';
 
   services.udisks2.enable = true;
 
