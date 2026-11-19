@@ -244,6 +244,7 @@ fonts.packages = with pkgs; [
   # makes Electron apps run on Wayland
 
 # Programs
+   virtualisation.waydroid.enable = true;
 
   services.gvfs.enable = true; # for android device mounting
 
