@@ -134,6 +134,8 @@ services.lact.enable = true;
   type = "ibus";
 };
 
+  networking.firewall.trustedInterfaces = [ "waydroid0" ];
+
 # Keyboard
 
 services.udev.extraRules = ''
