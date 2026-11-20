@@ -202,7 +202,7 @@ services.power-profiles-daemon.enable = true;
 };
   
 services.xserver.xkb = {
-  layout = "us,ru";
+  layout = "us,ru,gr";
   options = "grp:alt_shift_toggle";
 };
 
